@@ -1,0 +1,43 @@
+`timescale 1ns/1ps
+
+module fir_tb;
+    reg clk;
+    reg reset;
+    reg [7:0] data_in;
+    wire [7:0] data_out;
+
+    // Instantiate the filter
+    fir_filter uut (
+        .clk(clk),
+        .reset(reset),
+        .data_in(data_in),
+        .data_out(data_out)
+    );
+
+    // Clock generation (100MHz)
+    always #5 clk = ~clk;
+
+    initial begin
+        // Initialize
+        clk = 0;
+        reset = 1;
+        data_in = 0;
+        #20 reset = 0;
+
+        // Apply an impulse (Single spike)
+        #10 data_in = 8'd100;
+        #10 data_in = 8'd0;
+        
+        // Apply a step (High frequency noise simulation)
+        #50 data_in = 8'd10;
+        #10 data_in = 8'd90;
+        #10 data_in = 8'd10;
+        #10 data_in = 8'd90;
+        
+        #100 $finish;
+    end
+
+    initial begin
+        $monitor("Time=%0t | In=%d | Out=%d", $time, data_in, data_out);
+    end
+endmodule

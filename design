@@ -1,0 +1,26 @@
+module fir_filter (
+    input wire clk,
+    input wire reset,
+    input wire [7:0] data_in,
+    output reg [7:0] data_out
+);
+
+    reg [7:0] x1, x2; // Pipeline registers for delays
+    wire [9:0] sum;   // Intermediate sum (extra bits for bit-growth)
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            x1 <= 8'd0;
+            x2 <= 8'd0;
+            data_out <= 8'd0;
+        end else begin
+            // Shift register logic
+            x1 <= data_in;
+            x2 <= x1;
+            
+            // Scaled FIR logic: (1*x0 + 2*x1 + 1*x2) / 4
+            // Bit-shifting (>> 2) performs the division by 4
+            data_out <= (data_in + (x1 << 1) + x2) >> 2;
+        end
+    end
+endmodule
